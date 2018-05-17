@@ -3,7 +3,7 @@
 #include "tane.h"
 
 
-int main(int argc, char* argv[]) {
+int main(int argc, char **argv) {
   if (argc < 3) {
 	  std::cout << "ERROR: Not enough arguments" << std::endl;
     return 1;
@@ -12,6 +12,9 @@ int main(int argc, char* argv[]) {
   clock_t start = clock();
   
   // TODO
+  Tane tane(argv[1], 12);
+  tane.ComputeDependencies();
+  tane.Output(argv[2]);
 
   clock_t end = clock();
   std::cout << "Runtime : " << (double)(end - start) / CLOCKS_PER_SEC << std::endl;

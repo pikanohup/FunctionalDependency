@@ -7,7 +7,7 @@ DBG_ENABLE = 1
 SRC_PATH := .
 
 ## target exec file name
-TARGET := taner
+TARGET := tane
 
 ## get all source files
 SRCS += $(wildcard $(SRC_PATH)/*.cpp)
@@ -34,7 +34,6 @@ all: build
 build:
 	$(CPP) -c $(CFLAGS) $(SRCS)
 	$(CPP) $(CFLAGS) -o $(TARGET) $(OBJS)
-	$(RM) $(OBJS)
 
 clean:
 	rm -rf $(OBJS) $(TARGET)
