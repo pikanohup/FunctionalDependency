@@ -1,7 +1,7 @@
 CPP = g++
 
 ## debug flag
-DBG_ENABLE = 1
+DBG_ENABLE = 0
 
 ## source file path
 SRC_PATH := .
@@ -21,6 +21,8 @@ INCLUDE_PATH := .
 ## debug for debug info, when use gdb to debug
 ifeq (1, ${DBG_ENABLE})
 CFLAGS += -D_DEBUG -O0 -g -DDEBUG=1
+else
+CFLAGS += -O2
 endif
 
 ## get all include path
