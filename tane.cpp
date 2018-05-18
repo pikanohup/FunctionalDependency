@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <cstring>
 #include <unordered_map>
 #include "tane.h"
 
@@ -19,7 +18,7 @@ std::vector<std::string*> ReadData(const std::string file_name, int col_num) {
     int i = 0;
     int len = line.length();
     int pos = -1, end = 0;
-    
+
     for (; end < len-1; end++) {
       if (line[end] == ',' && line[end + 1] != ' ') {
         rows[i] = line.substr(pos + 1, end - pos - 1);
@@ -50,7 +49,7 @@ struct Level* GenerateNextLevel(struct Level* level, int attr_num) {
 		}
   } else {
     next_level->size = level->size + 1;
-    
+
     std::set<int>::iterator it = level->attr_sets.begin(), end = level->attr_sets.end();
 	  while (it != end) {
 		  int flag = 1;
@@ -61,7 +60,7 @@ struct Level* GenerateNextLevel(struct Level* level, int attr_num) {
 			  flag <<= 1;
 		  }
       it++;
-	  }   
+	  }
   }
 
   return next_level;
@@ -116,23 +115,22 @@ void Tane::Output(const std::string file_name) {
 
 
 void Tane::Output(struct Dependency dependency, std::ostream& out_stream) {
+  int left_flag = 1;
+	for (int j = 1; j <= attr_num_; j++) {
+    if (left_flag & dependency.left_attrs) {
+			out_stream << j << " ";
+		}
+		left_flag <<= 1;
+	}
+
+  out_stream << "-> ";
+
   int right_flag = 1;
   for (int i = 1; i <= attr_num_; i++) {
     if (right_flag & dependency.right_attrs) {
-
-      int left_flag = 1;
-			for (int j = 1; j <= attr_num_; j++) {
-        if (left_flag & dependency.left_attrs) {
-			    out_stream << j << " ";
-		    }
-		    left_flag <<= 1;
-	    }
-
-      out_stream << "-> ";
-
       out_stream << i << std::endl;
+      break;
 		}
-
 		right_flag <<= 1;
 	}
 }
@@ -145,10 +143,10 @@ void Tane::ComputeDependencies(Level* level) {
   // for each X in L do
   while (it != end) {
     int x = *it;
-   
+
     // RHS+(X) := intersect(RHS+(X\{E}), E in X)
     rhs_[x] = rhs_size - 1;
-    int e = 1; 
+    int e = 1;
     for (int i = 0; i < attr_num_; i++) {
 			if (x & e) {
 				rhs_[x] &= rhs_[x - e];
@@ -166,12 +164,12 @@ void Tane::ComputeDependencies(Level* level) {
         if (Validate(x - e, e)) {
 
           // output (X\{E} -> E)
-          dependencies_.insert(Dependency(x - e, e));
+          dependencies_.insert(struct Dependency(x - e, e));
 
 					// remove E from RHS+(X)
 					rhs_[x] -= e;
 
-					// remove all F in R\X from RHS+(X)					
+					// remove all F in R\X from RHS+(X)
 					int f = 1, r_minus_x = rhs_size - 1 - x;
 					for (int j = 0; j < attr_num_; j++) {
 						if (f & r_minus_x) {
@@ -209,8 +207,8 @@ int Tane::Partition(int attr_set) {
 			  break;
 		  }
 		  s >>= 1;
-	  }      
-	  
+	  }
+
     int attr_index = 0;
 	  for (int i = 0; i < table_.size(); i++) {
 		  std::string attr_value = table_[i][attr_pos];
@@ -219,23 +217,23 @@ int Tane::Partition(int attr_set) {
 		  if (map_pos == part_map.end()) {
         part_map.insert(make_pair(attr_value, attr_index));
         attr_index++;
-			  std::vector<int> init_set; 
+			  std::vector<int> init_set;
 			  init_set.push_back(i);
-			  part_sets.push_back(init_set);		  
+			  part_sets.push_back(init_set);
 		  } else {
 			  part_sets[map_pos->second].push_back(i);
 		  }
 	  }
-   
+
     for (auto it : part_sets) {
 		  if (it.size() != 1) {
         partitions_[attr_set].push_back(it);
         partition_sizes_[attr_set] += it.size();
 		  }
-	  }  
+	  }
 
     partitioned_[attr_set] = true;
-  } 
+  }
 
   return partitions_[attr_set].size();
 }
@@ -249,12 +247,12 @@ int Tane::Partition(int set_x, int set_y) {
     std::vector<std::vector<int>> part_sets(size_x);
     int *flags = new int[table_.size()];
 	  memset(flags, -1, table_.size() * sizeof(int));
-    
+
 	  for (int i = 0; i < size_x; i++) {
       part_sets.push_back(std::vector<int>());
       for (auto it : partitions_[set_x][i]) {
 			  flags[it] = i;
-		  }		  
+		  }
 	  }
 
 	  for (int i = 0; i < size_y; i++) {

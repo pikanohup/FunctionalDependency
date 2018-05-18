@@ -10,14 +10,13 @@ int main(int argc, char **argv) {
   }
 
   clock_t start = clock();
-  
-  // TODO
-  Tane tane(argv[1], 12);
+
+  Tane tane(argv[1], 15);
   tane.ComputeDependencies();
   tane.Output(argv[2]);
 
   clock_t end = clock();
-  std::cout << "Runtime : " << (double)(end - start) / CLOCKS_PER_SEC << std::endl;
+  std::cout << "Runtime: " << (double)(end - start) / CLOCKS_PER_SEC << std::endl;
 
   return 0;
 }

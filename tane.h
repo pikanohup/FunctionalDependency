@@ -22,19 +22,26 @@ struct Dependency {
 
   Dependency(int left, int right): left_attrs(left), right_attrs(right) {}
 
-  // IMPROVE
   bool operator < (const struct Dependency &that) const {
-    int this_flag = 1, that_flag = 1;
-
     if (this->left_attrs == that.left_attrs) {
-      while (!(this_flag & this->right_attrs)) this_flag <<= 1;
-      while (!(that_flag & that.right_attrs)) that_flag <<= 1;
+      return this->right_attrs < that.right_attrs;
     } else {
-      while (!(this_flag & this->left_attrs)) this_flag <<= 1;
-      while (!(that_flag & that.left_attrs)) that_flag <<= 1;
-    }
+      int this_flag = 1, that_flag = 1;
+      int this_left = this->left_attrs, that_left = that.left_attrs;
 
-    return this_flag < that_flag;
+      while (this_flag == that_flag) {
+        if (this_left) {
+          while (!(this_flag & this_left)) this_flag <<= 1;
+          this_left -= this_flag;
+        }
+        if (that_left) {
+          while (!(that_flag & that_left)) that_flag <<= 1;
+          that_left -= that_flag;
+        }
+      }
+
+      return this_flag < that_flag;
+    }
   }
 };
 
@@ -42,7 +49,7 @@ struct Dependency {
 class Tane {
  public:
   Tane(const std::string file_name, int attr_num);
-  void ComputeDependencies(); 
+  void ComputeDependencies();
   void Output(const std::string file_name);
 
  private:
@@ -60,5 +67,6 @@ class Tane {
   bool* partitioned_;
   std::set<struct Dependency> dependencies_;
 };
+
 
 #endif
