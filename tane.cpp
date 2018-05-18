@@ -165,7 +165,7 @@ void Tane::ComputeDependencies(Level* level) {
         if (Validate(x - e, e)) {
 
           // output (X\{E} -> E)
-          dependencies_.insert(struct Dependency(x - e, e));
+          dependencies_.insert(Dependency(x - e, e));
 
 					// remove E from RHS+(X)
 					rhs_[x] -= e;
