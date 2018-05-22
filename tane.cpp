@@ -198,10 +198,13 @@ void Tane::ComputeDependencies(Level* level) {
 
 
 int Tane::Partition(int attr_set) {
+  
+  // use hash table to map the original values to integers
   if (!partitioned_[attr_set]) {
     std::unordered_map<std::string, int> part_map;
     std::vector<std::vector<int>> part_sets;
 
+    // get index
     int s = attr_set, attr_pos = 0;
     for (; attr_pos < attr_num_; attr_pos++) {
 		  if (s & 1) {
@@ -210,22 +213,28 @@ int Tane::Partition(int attr_set) {
 		  s >>= 1;
 	  }
 
+    // partition equivalence classes
     int attr_index = 0;
 	  for (int i = 0; i < table_.size(); i++) {
 		  std::string attr_value = table_[i][attr_pos];
-		  std::unordered_map<std::string, int>::iterator map_pos = part_map.find(attr_value);
+		  std::unordered_map<std::string, int>::iterator pos_it = part_map.find(attr_value);
 
-		  if (map_pos == part_map.end()) {
+		  if (pos_it == part_map.end()) {
+        
+        // create new class
         part_map.insert(make_pair(attr_value, attr_index));
         attr_index++;
 			  std::vector<int> init_set;
 			  init_set.push_back(i);
 			  part_sets.push_back(init_set);
 		  } else {
-			  part_sets[map_pos->second].push_back(i);
+        
+        // to existing class
+			  part_sets[pos_it->second].push_back(i);
 		  }
 	  }
 
+    // drop set whose size equals to 1
     for (auto it : part_sets) {
 		  if (it.size() != 1) {
         partitions_[attr_set].push_back(it);
@@ -245,31 +254,43 @@ int Tane::Partition(int set_x, int set_y) {
 
   if (!partitioned_[set_r]) {
     int size_x = Partition(set_x), size_y = Partition(set_y);
-    std::vector<std::vector<int>> part_sets(size_x);
-    int *flags = new int[table_.size()];
-	  memset(flags, -1, table_.size() * sizeof(int));
+    std::vector<std::vector<int>> S(size_x);
+    int *T = new int[table_.size()]; 
+	  memset(T, -1, table_.size() * sizeof(int));
 
 	  for (int i = 0; i < size_x; i++) {
-      part_sets.push_back(std::vector<int>());
+      S.push_back(std::vector<int>());
       for (auto it : partitions_[set_x][i]) {
-			  flags[it] = i;
+			  T[it] = i;
 		  }
 	  }
 
 	  for (int i = 0; i < size_y; i++) {
-		  for (auto it : partitions_[set_y][i]) {
-			  if (flags[it] != -1) {
-          part_sets[flags[it]].push_back(it);
+		  for (auto t : partitions_[set_y][i]) {
+        
+        // if T[t] != NULL
+			  if (T[t] != -1) {
+          
+          // S[T[t]] := union(S[T[t]], {t})
+          S[T[t]].push_back(t);
 			  }
 		  }
 
-		  for (auto it : partitions_[set_y][i]) {
-			  if (flags[it] != -1) {
-				  if (part_sets[flags[it]].size() >= 2) {
-            partitions_[set_r].push_back(part_sets[flags[it]]);
-            partition_sizes_[set_r] += part_sets[flags[it]].size();
+		  for (auto t : partitions_[set_y][i]) {
+        
+        // if T[t] != NULL
+			  if (T[t] != -1) {
+          
+          // if |S[T[t]]| >= 2
+				  if (S[T[t]].size() >= 2) {
+            
+            // P := P combine S[T[t]]
+            partitions_[set_r].push_back(S[T[t]]);
+            partition_sizes_[set_r] += S[T[t]].size();
 				  }
-				  part_sets[flags[it]] = std::vector<int>();
+          
+          // S[T[t]] := empty
+				  S[T[t]] = std::vector<int>();
 			  }
 		  }
 	  }
