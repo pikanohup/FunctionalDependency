@@ -91,6 +91,10 @@ Tane::Tane(const std::string file_name, int attr_num) {
   memset(partitioned_, 0, rhs_size * sizeof(bool));
 
   dependencies_ = std::set<struct Dependency>();
+  
+  S = std::vector<std::vector<int>>();
+  T = new int[table_.size()]; 
+  memset(T, -1, table_.size() * sizeof(int));
 }
 
 
@@ -254,9 +258,6 @@ int Tane::Partition(int set_x, int set_y) {
 
   if (!partitioned_[set_r]) {
     int size_x = Partition(set_x), size_y = Partition(set_y);
-    std::vector<std::vector<int>> S(size_x);
-    int *T = new int[table_.size()]; 
-	  memset(T, -1, table_.size() * sizeof(int));
 
 	  for (int i = 0; i < size_x; i++) {
       S.push_back(std::vector<int>());
@@ -295,6 +296,8 @@ int Tane::Partition(int set_x, int set_y) {
 		  }
 	  }
 
+    S.clear();
+    memset(T, -1, table_.size() * sizeof(int));
     partitioned_[set_r] = true;
   }
 

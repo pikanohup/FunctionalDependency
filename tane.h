@@ -66,6 +66,8 @@ class Tane {
   int* partition_sizes_;
   bool* partitioned_;
   std::set<struct Dependency> dependencies_;
+  std::vector<std::vector<int>> S;
+  int *T;
 };
 
 
