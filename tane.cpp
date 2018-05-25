@@ -100,8 +100,7 @@ Tane::Tane(const std::string file_name, int attr_num) {
 
 void Tane::ComputeDependencies() {
   Level* level = GenerateNextLevel(NULL, attr_num_);
-  int count = attr_num_ - 1;
-  while (count--) {
+  while (!level->attr_sets.empty()) {
 		level = GenerateNextLevel(level, attr_num_);
     ComputeDependencies(level);
 	}
