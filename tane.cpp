@@ -9,9 +9,9 @@ std::vector<std::string*> ReadData(const std::string file_name, int col_num) {
   std::vector<std::string*> result;
   std::ifstream in_file(file_name);
 
-	if (!in_file) {
-		std::cout << "ERROR: Cannot open file" << std::endl;
-	}
+  if (!in_file) {
+    std::cout << "ERROR: Cannot open file" << std::endl;
+  }
 
   std::string line;
   while (getline(in_file, line)) {
@@ -33,7 +33,7 @@ std::vector<std::string*> ReadData(const std::string file_name, int col_num) {
   }
 
   in_file.close();
-	return result;
+  return result;
 }
 
 
@@ -44,24 +44,24 @@ struct Level* GenerateNextLevel(struct Level* level, int attr_num) {
     next_level->size = 1;
 
     int flag = 1;
-		for (int i = 0; i < attr_num; i++) {
-			next_level->attr_sets.insert(flag);
-			flag <<= 1;
-		}
+    for (int i = 0; i < attr_num; i++) {
+      next_level->attr_sets.insert(flag);
+      flag <<= 1;
+    }
   } else {
     next_level->size = level->size + 1;
 
     std::set<int>::iterator it = level->attr_sets.begin(), end = level->attr_sets.end();
-	  while (it != end) {
-		  int flag = 1;
+    while (it != end) {
+      int flag = 1;
       for (int i = 0; i < attr_num; i++) {
-			  if (!(*it & flag)) {
-				  next_level->attr_sets.insert(*it + flag);
-			  }
-			  flag <<= 1;
-		  }
+        if (!(*it & flag)) {
+          next_level->attr_sets.insert(*it + flag);
+        }
+        flag <<= 1;
+      }
       it++;
-	  }
+    }
   }
 
   return next_level;
@@ -74,12 +74,12 @@ Tane::Tane(const std::string file_name, int attr_num) {
   table_ = ReadData(file_name, attr_num_);
 
   int s = 1, rhs_size = (1 << attr_num_);
-	rhs_ = new int[rhs_size];
-	memset(rhs_, 0, rhs_size * sizeof(int));
-	for (int i = 0; i < attr_num_; i++) {
-		rhs_[s] = rhs_size - 1;
-		s <<= 1;
-	}
+  rhs_ = new int[rhs_size];
+  memset(rhs_, 0, rhs_size * sizeof(int));
+  for (int i = 0; i < attr_num_; i++) {
+    rhs_[s] = rhs_size - 1;
+    s <<= 1;
+  }
 
   partitions_ = new std::vector<std::vector<int>>[rhs_size];
   memset(partitions_, 0, rhs_size * sizeof(std::vector<std::vector<int>>));
@@ -91,19 +91,20 @@ Tane::Tane(const std::string file_name, int attr_num) {
   memset(partitioned_, 0, rhs_size * sizeof(bool));
 
   dependencies_ = std::set<struct Dependency>();
-  
+
   S = std::vector<std::vector<int>>();
-  T = new int[table_.size()]; 
+  T = new int[table_.size()];
   memset(T, -1, table_.size() * sizeof(int));
 }
 
 
 void Tane::ComputeDependencies() {
   Level* level = GenerateNextLevel(NULL, attr_num_);
-  while (!level->attr_sets.empty()) {
-		level = GenerateNextLevel(level, attr_num_);
+  int count = attr_num_ - 1;
+  while (count--) {
+    level = GenerateNextLevel(level, attr_num_);
     ComputeDependencies(level);
-	}
+  }
 }
 
 
@@ -120,12 +121,12 @@ void Tane::Output(const std::string file_name) {
 
 void Tane::Output(struct Dependency dependency, std::ostream& out_stream) {
   int left_flag = 1;
-	for (int j = 1; j <= attr_num_; j++) {
+  for (int j = 1; j <= attr_num_; j++) {
     if (left_flag & dependency.left_attrs) {
-			out_stream << j << " ";
-		}
-		left_flag <<= 1;
-	}
+      out_stream << j << " ";
+    }
+    left_flag <<= 1;
+  }
 
   out_stream << "-> ";
 
@@ -134,9 +135,9 @@ void Tane::Output(struct Dependency dependency, std::ostream& out_stream) {
     if (right_flag & dependency.right_attrs) {
       out_stream << i << std::endl;
       break;
-		}
-		right_flag <<= 1;
-	}
+    }
+    right_flag <<= 1;
+  }
 }
 
 
@@ -152,17 +153,17 @@ void Tane::ComputeDependencies(Level* level) {
     rhs_[x] = rhs_size - 1;
     int e = 1;
     for (int i = 0; i < attr_num_; i++) {
-			if (x & e) {
-				rhs_[x] &= rhs_[x - e];
-			}
-			e <<= 1;
-		}
+      if (x & e) {
+        rhs_[x] &= rhs_[x - e];
+      }
+      e <<= 1;
+    }
 
     // for each E in (X intersect RHS+(X)) do
     int inter_x_rhsx = x & rhs_[x];
     e = 1;
-		for (int i = 0; i < attr_num_; i++) {
-			if (e & inter_x_rhsx) {
+    for (int i = 0; i < attr_num_; i++) {
+      if (e & inter_x_rhsx) {
 
         // if (X\{E} -> E) is valid then
         if (Validate(x - e, e)) {
@@ -170,38 +171,38 @@ void Tane::ComputeDependencies(Level* level) {
           // output (X\{E} -> E)
           dependencies_.insert(Dependency(x - e, e));
 
-					// remove E from RHS+(X)
-					rhs_[x] -= e;
+          // remove E from RHS+(X)
+          rhs_[x] -= e;
 
-					// remove all F in R\X from RHS+(X)
-					int f = 1, r_minus_x = rhs_size - 1 - x;
-					for (int j = 0; j < attr_num_; j++) {
-						if (f & r_minus_x) {
-							if (f & rhs_[x]) {
-								rhs_[x] -= f;
-							}
-						}
-						f <<= 1;
-					}
-				}
-			}
-			e <<= 1;
-		}
+          // remove all F in R\X from RHS+(X)
+          int f = 1, r_minus_x = rhs_size - 1 - x;
+          for (int j = 0; j < attr_num_; j++) {
+            if (f & r_minus_x) {
+              if (f & rhs_[x]) {
+                rhs_[x] -= f;
+              }
+            }
+            f <<= 1;
+          }
+        }
+      }
+      e <<= 1;
+    }
 
     // if RHS+(X) = empty do
     if (!rhs_[x]) {
 
       // delete X from L
-			level->attr_sets.erase(it++);
-		} else {
-			it++;
-		}
+      level->attr_sets.erase(it++);
+    } else {
+      it++;
+    }
   }
 }
 
 
 int Tane::Partition(int attr_set) {
-  
+
   // use hash table to map the original values to integers
   if (!partitioned_[attr_set]) {
     std::unordered_map<std::string, int> part_map;
@@ -210,40 +211,40 @@ int Tane::Partition(int attr_set) {
     // get index
     int s = attr_set, attr_pos = 0;
     for (; attr_pos < attr_num_; attr_pos++) {
-		  if (s & 1) {
-			  break;
-		  }
-		  s >>= 1;
-	  }
+      if (s & 1) {
+        break;
+      }
+      s >>= 1;
+    }
 
     // partition equivalence classes
     int attr_index = 0;
-	  for (int i = 0; i < table_.size(); i++) {
-		  std::string attr_value = table_[i][attr_pos];
-		  std::unordered_map<std::string, int>::iterator pos_it = part_map.find(attr_value);
+    for (int i = 0; i < table_.size(); i++) {
+      std::string attr_value = table_[i][attr_pos];
+      std::unordered_map<std::string, int>::iterator pos_it = part_map.find(attr_value);
 
-		  if (pos_it == part_map.end()) {
-        
+      if (pos_it == part_map.end()) {
+
         // create new class
         part_map.insert(make_pair(attr_value, attr_index));
         attr_index++;
-			  std::vector<int> init_set;
-			  init_set.push_back(i);
-			  part_sets.push_back(init_set);
-		  } else {
-        
+        std::vector<int> init_set;
+        init_set.push_back(i);
+        part_sets.push_back(init_set);
+      } else {
+
         // to existing class
-			  part_sets[pos_it->second].push_back(i);
-		  }
-	  }
+        part_sets[pos_it->second].push_back(i);
+      }
+    }
 
     // drop set whose size equals to 1
     for (auto it : part_sets) {
-		  if (it.size() != 1) {
+      if (it.size() != 1) {
         partitions_[attr_set].push_back(it);
         partition_sizes_[attr_set] += it.size();
-		  }
-	  }
+      }
+    }
 
     partitioned_[attr_set] = true;
   }
@@ -258,42 +259,42 @@ int Tane::Partition(int set_x, int set_y) {
   if (!partitioned_[set_r]) {
     int size_x = Partition(set_x), size_y = Partition(set_y);
 
-	  for (int i = 0; i < size_x; i++) {
+    for (int i = 0; i < size_x; i++) {
       S.push_back(std::vector<int>());
       for (auto it : partitions_[set_x][i]) {
-			  T[it] = i;
-		  }
-	  }
+        T[it] = i;
+      }
+    }
 
-	  for (int i = 0; i < size_y; i++) {
-		  for (auto t : partitions_[set_y][i]) {
-        
+    for (int i = 0; i < size_y; i++) {
+      for (auto t : partitions_[set_y][i]) {
+
         // if T[t] != NULL
-			  if (T[t] != -1) {
-          
+        if (T[t] != -1) {
+
           // S[T[t]] := union(S[T[t]], {t})
           S[T[t]].push_back(t);
-			  }
-		  }
+        }
+      }
 
-		  for (auto t : partitions_[set_y][i]) {
-        
+      for (auto t : partitions_[set_y][i]) {
+
         // if T[t] != NULL
-			  if (T[t] != -1) {
-          
+        if (T[t] != -1) {
+
           // if |S[T[t]]| >= 2
-				  if (S[T[t]].size() >= 2) {
-            
+          if (S[T[t]].size() >= 2) {
+
             // P := P combine S[T[t]]
             partitions_[set_r].push_back(S[T[t]]);
             partition_sizes_[set_r] += S[T[t]].size();
-				  }
-          
+          }
+
           // S[T[t]] := empty
-				  S[T[t]] = std::vector<int>();
-			  }
-		  }
-	  }
+          S[T[t]] = std::vector<int>();
+        }
+      }
+    }
 
     S.clear();
     memset(T, -1, table_.size() * sizeof(int));

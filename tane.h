@@ -10,8 +10,8 @@ extern std::vector<std::string*> ReadData(const std::string file_name, int col_n
 
 
 struct Level {
-	int size;
-	std::set<int> attr_sets;
+  int size;
+  std::set<int> attr_sets;
 };
 extern struct Level* GenerateNextLevel(struct Level* level, int attr_num);
 
